@@ -1,4 +1,8 @@
-<?php
+# Hakuryo Libs
+
+## ConnectionDB
+
+```PHP
 
 require_once './vendor/autoload.php';
 
@@ -11,4 +15,9 @@ foreach ($db->search("SELECT * FROM event WHERE id = :id",["id"=> 17]) as $entry
 }
 // close the connection
 $db = null;
+
+```
+## ConnectionOCI
+
+## ConnectionLDAP
 
