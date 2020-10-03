@@ -1,0 +1,20 @@
+{
+    "name": "Hakuryo/connection",
+    "description": "A set of libs to easily connect to ldap or databases",
+    "keywords": ["OCI","mysql","PDO"],
+    "authors": [
+        {
+            "name": "Hakuryo",
+            "email": "your@email.here"
+        }
+    ],
+    "require": {
+        "php": ">=7.0.0"
+    },
+    "autoload": {
+        "classmap": [
+            "db/",
+            "ldap/"
+        ]
+    }
+}
