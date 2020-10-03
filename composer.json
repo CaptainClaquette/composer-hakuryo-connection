@@ -1,11 +1,11 @@
 {
-    "name": "Hakuryo/connection",
+    "name": "hakuryo/connection",
     "description": "A set of libs to easily connect to ldap or databases",
     "keywords": ["OCI","mysql","PDO"],
     "authors": [
         {
             "name": "Hakuryo",
-            "email": "your@email.here"
+            "email": "kevin.dere@univ-reims.fr"
         }
     ],
     "require": {
