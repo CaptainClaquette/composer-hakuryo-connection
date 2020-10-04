@@ -1,7 +1,7 @@
 {
     "name": "hakuryo/connection",
     "description": "A set of libs to easily connect to ldap or databases",
-    "keywords": ["OCI","mysql","PDO"],
+    "keywords": ["OCI","mysql","PDO","LDAP"],
     "license": "MIT",
     "authors": [
         {

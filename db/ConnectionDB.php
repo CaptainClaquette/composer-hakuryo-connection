@@ -36,6 +36,11 @@ class ConnectionDB extends PDO {
         return $this->cast_data($stmt);
     }
 
+    public function get($request, $args = [], $assoc = true): array {
+        $result = $this->search($request, $args, $assoc);
+        return count($result) > 0 ? $result[0] : null;
+    }
+
     public function modify($request, $args = [], $assoc = true): int {
         $this->check_query_type($request, self::QUERY_TYPE_MODIFY);
         $stmt = $this->prepare($request);
