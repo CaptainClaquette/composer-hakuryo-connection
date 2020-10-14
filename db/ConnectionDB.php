@@ -10,11 +10,22 @@ class ConnectionDB extends PDO {
     const QUERY_TYPE_SEARCH = 1;
     const QUERY_TYPE_MODIFY = 2;
 
+    /**
+     * Create a new instance of ConnectionDB from a ini file.
+     * @param type $config_path the location of the ini file
+     * @return ConnectionDB
+     */
     public function __construct(string $dsn, string $username = NULL, string $passwd = NULL, array $options = NULL) {
         parent::__construct($dsn, $username, $passwd, $options);
         $this->query("SET NAMES 'utf8'");
     }
 
+    /**
+     * Create a new instance of ConnectionDB from a ini file.
+     * The ini file MUST have the following keys : HOST,DB,USER,PWD,PORT
+     * @param type $config_path the location of the ini file
+     * @return ConnectionDB
+     */
     public static function from_file($path, $section = "DB"): ConnectionDB {
         $conf = parse_ini_file($path);
         $host = $conf["HOST"];
