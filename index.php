@@ -3,6 +3,7 @@
 require_once './vendor/autoload.php';
 
 use hakuryo\db\ConnectionDB;
+use hakuryo\db\ConnectionOCI;
 
 //Connect from a file
 $db = ConnectionDB::from_file(__DIR__ . "/config/db.ini");
@@ -11,4 +12,3 @@ foreach ($db->search("SELECT * FROM event WHERE id = :id",["id"=> 17]) as $entry
 }
 // close the connection
 $db = null;
-

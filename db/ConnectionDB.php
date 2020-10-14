@@ -15,7 +15,7 @@ class ConnectionDB extends PDO {
         $this->query("SET NAMES 'utf8'");
     }
 
-    public static function from_file($path): ConnectionDB {
+    public static function from_file($path, $section = "DB"): ConnectionDB {
         $conf = parse_ini_file($path);
         $host = $conf["HOST"];
         $db = $conf["DB"];
@@ -28,19 +28,46 @@ class ConnectionDB extends PDO {
         return $con;
     }
 
-    public function search($request, $args = [], $assoc = true): array {
+    /**
+     * Perform a SELECT/SHOW/DESCRIB request and expect multiple results
+     * @param string $request the request to execute. You can use preparedQuery placeholder in $request
+     * @param array $args Argument of the prepared query
+     * @param bool $assoc if assoc is true, $args must be an associative array with
+     * string key else a 0 indexed array
+     * @return array An array of stdClass object.
+     * @throws Exception If the query is not SELECT/SHOW/DESCRIB
+     */
+    public function search(string $request,array $args = [], $assoc = true): array {
         $this->check_query_type($request, self::QUERY_TYPE_SEARCH);
         $stmt = $this->prepare($request);
         $this->bind_values($stmt, $args, $assoc);
         $stmt->execute();
         return $this->cast_data($stmt);
     }
-
+    
+    /**
+     * Perform a SELECT/SHOW/DESCRIB request and get the first result
+     * @param string $request the request to execute. You can use preparedQuery placeholder in $request
+     * @param array $args Argument of the prepared query
+     * @param bool $assoc if assoc is true, $args must be an associative array with
+     * string key else a 0 indexed array
+     * @return array An array of stdClass object.
+     * @throws Exception If the query is not SELECT/SHOW/DESCRIB
+     */
     public function get($request, $args = [], $assoc = true): array {
         $result = $this->search($request, $args, $assoc);
         return count($result) > 0 ? $result[0] : null;
     }
-
+    
+    /**
+     * Perform a UPDATE/INSERT/DELETE and return the number of affected rows
+     * @param string $request the request to execute. You can use preparedQuery placeholder in $request
+     * @param array $args Argument of the prepared query
+     * @param bool $assoc if assoc is true, $args must be an associative array with
+     * string key else a 0 indexed array
+     * @return int the number of affected rows
+     * @throws Exception If the query is not UPDATE/INSERT/DELETE
+     */
     public function modify($request, $args = [], $assoc = true): int {
         $this->check_query_type($request, self::QUERY_TYPE_MODIFY);
         $stmt = $this->prepare($request);

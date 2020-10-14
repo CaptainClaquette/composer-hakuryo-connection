@@ -20,6 +20,12 @@ class ConnectionOCI {
 
     public $connection;
 
+    /**
+     * Create a new instance of ConnectionOCI from a ini file.
+     * The ini file MUST have the following keys : HOST,DB,USER,PWD,PORT
+     * @param type $config_path the location of the ini file
+     * @return ConnectionOCI
+     */
     public function __construct($config_path) {
         $conf = parse_ini_file($config_path);
         $host = $conf["HOST"];
@@ -30,7 +36,14 @@ class ConnectionOCI {
         $this->connection = oci_connect($user, $pwd, "$host:$port/$db");
     }
 
-    public function search($request, $args = []): array {
+    /**
+     * Perform a SELECT/SHOW/DESCRIB request and expect multiple result
+     * @param string $request the request to execute. You can use preparedQuery placeholder in $request
+     * @param array $args An associative array where the keys are the placeholders of the preparedQuery
+     * @return array An array of stdClass object.
+     * @throws Exception If the query is not SELECT/SHOW/DESCRIB
+     */
+    public function search(string $request, array $args = []): array {
         $this->check_query_type($request, self::QUERY_TYPE_SEARCH);
         $res = [];
         $statement = oci_parse($this->connection, $request);
@@ -42,6 +55,13 @@ class ConnectionOCI {
         return $res;
     }
 
+    /**
+     * Perform a SELECT/SHOW/DESCRIB query and get only the first result
+     * @param string $request the request to execute. You can use preparedQuery placeholder in $request
+     * @param array $args An associative array where the keys are the placeholders of the preparedQuery
+     * @return array An array of stdClass object.
+     * @throws Exception If the query is not SELECT/SHOW/DESCRIB
+     */
     public function get($request, $args = []): array {
         $this->check_query_type($request, self::QUERY_TYPE_SEARCH);
         $statement = oci_parse($this->connection, $request);
@@ -50,7 +70,14 @@ class ConnectionOCI {
         $obj = oci_fetch_object($statement);
         return $obj ? $obj : null;
     }
-
+    
+    /**
+     * Perform a UPDATE/INSERT/DELETE and return the number of affected rows
+     * @param string $request the request to execute. You can use preparedQuery placeholder in $request
+     * @param array $args An associative array where the keys are the placeholders of the preparedQuery
+     * @return int the number of affected rows
+     * @throws Exception If the query is not UPDATE/INSERT/DELETE
+     */
     public function modify($request, $args = []): int {
         $this->check_query_type($request, self::QUERY_TYPE_MODIFY);
         $res = [];
@@ -58,6 +85,13 @@ class ConnectionOCI {
         $this->bind_values($statement, $args);
         oci_execute($statement);
         return oci_num_rows($statement);
+    }
+    
+    /**
+     * Close the oci conection
+     */
+    public function disconnect() {
+        oci_close($this->connection);
     }
 
     private function bind_values(Ressource &$stmt, array $args) {
