@@ -1,7 +1,7 @@
 <?php
 
 namespace hakuryo\ldap;
-
+use Exception;
 /**
  * Description of ConnectionLDAP
  *
@@ -9,100 +9,112 @@ namespace hakuryo\ldap;
  */
 class ConnectionLDAP {
 
-    public $connection;
-    public $search_options;
+    use LdapUtils;
 
-    public function __construct($host, $login, $password) {
-        $this->connection = ldap_connect("ldap://$host");
-        ldap_bind($this->connection, $login, $password);
-        ldap_set_option($this->connection, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $this->search_options = new LdapSearchOptions();
-        $this->search_options->base_dn = self::get_root_dn();
+    const MOD_ADD = 0;
+    const MOD_REPLACE = 1;
+    const MOD_DEL = 2;
+
+    public $connection;
+    private $search_options;
+
+    public function __construct(string $host, string $login, string $password, LdapSearchOptions $search_options = null) {
+        if ($this->connection = ldap_connect("ldap://$host")) {
+            ldap_set_option($this->connection, LDAP_OPT_PROTOCOL_VERSION, 3);
+            if (!ldap_bind($this->connection, $login, $password)) {
+                throw new Exception("Can't bind to ldap server $host cause : " . $this->getLastError(), -1);
+            }
+            $this->search_options = $search_options === null ? new LdapSearchOptions(self::get_root_dn()) : $search_options;
+        } else {
+            throw new Exception("Can't connect to ldap server $host cause : " . $this->getLastError(), -1);
+        }
     }
 
-    public static function fromFile($path): ConnectionLDAP {
-        $conf = parse_ini_file($path);
+    public static function fromFile(string $path, string $section = null): ConnectionLDAP {
+        $conf = $section === null ? parse_ini_file($path) : parse_ini_file($path, true)[$section];
         $host = $conf["HOST"];
         $user = $conf["USER"];
         $password = $conf["PWD"];
         $base_dn = $conf["DN"];
-        $this->connection = ldap_connect($host);
-        ldap_bind($this->connection, $user, $password);
-        ldap_set_option($this->connection, LDAP_OPT_PROTOCOL_VERSION, 3);
-        $ldap = new ConnectionLDAP($host, $user, $password);
-        $ldap->search_options->set_base_dn($base_dn);
+        $ldap = new ConnectionLDAP($host, $user, $password, new LdapSearchOptions($base_dn));
         return $ldap;
     }
 
     /**
+     * Retourne le resultat de $filter avec les attribut specifie dans $returnedAttrs.
      * @param String $filter Filtre ldap
-     * @param Array $returnedAttrs [Optionnel] Tableau d'attribut a retourner. Defaut = null
-     * @param Interger $nbresult [Optionnel] Nombre de resultats maximum souhaite. Defaut = 0 (acunne limite).
-     * Attention si le nombre de resultats souhaités est inferieur au nombre de resultats retourne. Un warning est lance (partial result)
+     * @param array $returnedAttrs [Optionnel] Tableau d'attribut a retourner. Defaut = ['*']
      * @see ldap_search
-     * @return Array Tableau associatif avec les noms d'attributs ldap en tant que clef.
+     * @return array Tableau associatif avec les noms d'attributs ldap en tant que clef.
      */
-    public function search(string $filter, array $returnedAttrs = ['*']): Array {
-        if ($this->check_ldap_con()) {
-            $research = ldap_search($this->connection, $this->search_options->base_dn, utf8_encode($filter), $returnedAttrs, 0, $this->search_options->result_limit);
+    public function search(string $filter, array $returnedAttrs = ['*']): array {
+        $research = false;
+        if ($this->search_options->get_scope() === LdapSearchOptions::SEARCH_SCOPE_SUB) {
+            $research = @ldap_search($this->connection, $this->search_options->get_base_dn(), utf8_encode($filter), $returnedAttrs, 0, $this->search_options->get_result_limit());
+        } else {
+            $research = @ldap_list($this->connection, $this->search_options->get_base_dn(), utf8_encode($filter), $returnedAttrs, 0, $this->search_options->get_result_limit());
         }
-        if ($this->search_options->sort_by_attr) {
-            ldap_sort($this->connection, $research, $this->search_options->sort_by_attr);
+        if (!$research) {
+            throw new Exception("Can't perform research cause : " . $this->getLastError());
         }
-        $entrys = ldap_get_entries($this->connection, $research);
-        return ConnectionLDAP::clear_ldap_result($entrys);
+        $entrys = @ldap_get_entries($this->connection, $research);
+        return $entrys['count'] > 0 ? $this->clear_ldap_result($entrys) : [];
     }
 
-    public static function clear_ldap_result($entrys) {
-        $res = array();
-        unset($entrys["count"]);
-        foreach ($entrys as $line) {
-            $temp = [];
-            $temp['dn'] = $line["dn"];
-            unset($line["count"]);
-            unset($line["dn"]);
-            foreach ($line as $key => $value) {
-                if (is_string($key)) {
-                    unset($value["count"]);
-                    $temp[utf8_encode($key)] = count($value) > 1 ? $value : utf8_encode($value[0]);
-                }
-            }
-            ksort($temp, SORT_NATURAL);
-            array_push($res, (object) $temp);
+    /**
+     * Retourne l'entree corespondant a $filter avec les attributs specifie dans $returnedAttrs.
+     * @param string $filter le filtre LDAP
+     * @param array $returnedAttrs [Optionnel] Tableau d'attribut a retourner. Defaut = ['*']
+     * @return stdclass retourne un stdClass vide si aucun resultat ne correspond a $filter
+     */
+    public function get_entry(string $filter, array $returnedAttrs = ['*']): \stdclass {
+        $limit = $this->search_options->get_result_limit();
+        $this->search_options->set_result_limit(1);
+        $res = $this->search($filter, $returnedAttrs);
+        $this->search_options->set_result_limit($limit);
+        return count($res) > 0 ? $res[0] : new \stdClass();
+    }
+
+    public function modify(string $entry_dn, array $target_entry_attr, int $modify_type): bool {
+        $result = false;
+        switch ($modify_type) {
+            case self::MOD_ADD:
+                $result = ldap_mod_add($this->connection, $entry_dn, $target_entry_attr);
+                break;
+            case self::MOD_DEL:
+                $result = ldap_mod_del($this->connection, $entry_dn, $target_entry_attr);
+                break;
+            case self::MOD_REPLACE:
+                $result = ldap_mod_replace($this->connection, $entry_dn, $target_entry_attr);
+                break;
         }
-        return $res;
+        if (!$result) {
+            throw new Exception("Can't performe modification of $entry_dn cause : " . $this->getLastError());
+        }
+        return $result;
     }
 
-    public function getLastError() {
-        $msg = "";
-        ldap_get_option($this->con, LDAP_OPT_DIAGNOSTIC_MESSAGE, $msg);
-        return "[ERROR_CODE]" . ldap_errno($this->con) . " " . ldap_error($this->con) . " " . "$msg";
+    public function add(string $entry_dn, array $ldap_entry_attr): bool {
+        if (!@ldap_add($this->connection, $entry_dn, $ldap_entry_attr)) {
+            throw new Exception("Can't add ldap entry $entry_dn cause : " . $this->getLastError());
+        }
+        return true;
     }
 
-    public function format_password($pass) {
-        return "{SHA}" . base64_encode(pack("H*", sha1($pass)));
+    public function delete(string $entry_dn): bool {
+        if (!@ldap_delete($this->connection, $entry_dn)) {
+            throw new Exception("Can't delete ldap entry $entry_dn cause : " . $this->getLastError());
+        }
+        return true;
     }
 
     public function disconect() {
         ldap_close($this->connection);
     }
 
-    public function check_ldap_con() {
-        if (!$this->connection) {
-            throw new Exception("LDAP Connection lost, try to check ConnectionLDAP con variable");
-        }
-        return true;
-    }
-
-    private static function get_root_dn() {
-        $mydn = ldap_exop_whoami($this->connection);
-        $matches = array();
-        preg_match('/dc=.*/', $mydn, $matches);
-        if (count($matches) > 0) {
-            return $matches[0];
-        } else {
-            throw new Exception("Can't retrieve root_dn from provided user dn");
-        }
+    // Getter & Setter
+    public function get_search_options(): LdapSearchOptions {
+        return $this->search_options;
     }
 
 }
