@@ -66,8 +66,10 @@ $ldap = new ConnectionLDAP("myldap.mydomain.com","uid=user,ou=people,dc=mydomain
 // From File
 $ldap = ConnectionLDAP::fromFile("path_to_my_ldap_ini_file");
 
-//ldap_search
+// You can specify a section of your ini file
+$ldap = ConnectionLDAP::fromFile("path_to_my_ldap_ini_file","ldap_section");
 
+//ldap_search
 $ldap_filter = "memberof=cn=admin,ou=groups,dc=mydomain,dc=com";
 $attr_list = ["uid","displayname","sn","givenname"];
 $results = $ldap->search($ldap_filer,$attr_list);
@@ -75,18 +77,22 @@ foreach($result as $entry){
     echo json_encode($entry,JSON_PRETTY_PRINT);
 }
 
-//Change search base_dn
-$ldap->search_options->base_dn = "ou=newOu,dc=mydomain,dc=com";
+// get an specifique entry
+$ldap->get_entry($ldap_filer,$attr_list);
 
-//Limit Result amount
-$ldap->search_options->result_limit = 10;
+// Modify serach_options
+$ldap->get_search_options()->set_base_dn("ou=my_ou,dc=exemple,dc=com");
+$ldap->get_search_options()->set_result_limit(1);
+$ldap->get_search_options()->set_scope(LdapSearchOptions::SEARCH_SCOPE_ONE_LEVEL);
 
-// Enable sorting by an attribut on ldap_search
-$ldap->search_options->sort_by_attr = "sn";
+// You can chain modification
+$ldap->get_search_options()->set_result_limit(1)->set_scope(LdapSearchOptions::SEARCH_SCOPE_ONE_LEVEL);
+
 ```
 
 ### Exemple INI file
 ```INI
+[ldap]
 HOST="ldap://myldap.mydomain.com"
 ;LDAPS
 ;HOST="ldaps://myldap.mydomain.com"
