@@ -18,6 +18,14 @@ class ConnectionLDAP {
     public $connection;
     private $search_options;
 
+    /**
+     * Create a instance of ConnectionLDAP
+     * @param string $host The LDAP server fqdn
+     * @param string $login The user's distinguished name 
+     * @param string $password The user's password
+     * @param \hakuryo\ldap\LdapSearchOptions $search_options an instance of LdapSearchOptions
+     * @throws Exception if LDAP server can't be conntacted or if the connection using user's credentials fail.
+     */
     public function __construct(string $host, string $login, string $password, LdapSearchOptions $search_options = null) {
         if ($this->connection = ldap_connect("ldap://$host")) {
             ldap_set_option($this->connection, LDAP_OPT_PROTOCOL_VERSION, 3);
@@ -30,6 +38,13 @@ class ConnectionLDAP {
         }
     }
 
+    /**
+     * Create a instance of ConnectionLDAP from a ini file.
+     * The ini file must have HOST,USER,PWD keys
+     * @param string $path Path of the ini file
+     * @param string $section Section to use on the ini file.
+     * @return \hakuryo\ldap\ConnectionLDAP
+     */
     public static function fromFile(string $path, string $section = null): ConnectionLDAP {
         $conf = $section === null ? parse_ini_file($path) : parse_ini_file($path, true)[$section];
         $host = $conf["HOST"];
@@ -74,7 +89,15 @@ class ConnectionLDAP {
         $this->search_options->set_result_limit($limit);
         return count($res) > 0 ? $res[0] : new \stdClass();
     }
-
+    
+    /**
+     * Modify a LDAP entry
+     * @param string $entry_dn The distinguished name of the entry
+     * @param array $target_entry_attr The attributes to modify and there values
+     * @param int $modify_type can be one of the constant MOD_ADD,MOD_DEL,MOD_REPLACE of ConnectionLDAP
+     * @return bool Return True on success.
+     * @throws Exception throw an exception on fail.
+     */
     public function modify(string $entry_dn, array $target_entry_attr, int $modify_type): bool {
         $result = false;
         switch ($modify_type) {
@@ -94,6 +117,13 @@ class ConnectionLDAP {
         return $result;
     }
 
+    /**
+     * Create an LDAP entry
+     * @param string $entry_dn The distinguished name of the entry
+     * @param array $ldap_entry_attr the attributes of the entry
+     * @return bool Return True on success.
+     * @throws Exception throw an exception on fail.
+     */
     public function add(string $entry_dn, array $ldap_entry_attr): bool {
         if (!@ldap_add($this->connection, $entry_dn, $ldap_entry_attr)) {
             throw new Exception("Can't add ldap entry $entry_dn cause : " . $this->getLastError());
@@ -101,6 +131,12 @@ class ConnectionLDAP {
         return true;
     }
 
+    /**
+     * Delete the ldap entry specified by $entry_dn
+     * @param string $entry_dn The distinguished name of the entry
+     * @return bool Return True on success.
+     * @throws Exception throw an exception on fail.
+     */
     public function delete(string $entry_dn): bool {
         if (!@ldap_delete($this->connection, $entry_dn)) {
             throw new Exception("Can't delete ldap entry $entry_dn cause : " . $this->getLastError());
@@ -108,6 +144,9 @@ class ConnectionLDAP {
         return true;
     }
 
+    /**
+     * Close the ldap connection
+     */
     public function disconect() {
         ldap_close($this->connection);
     }
