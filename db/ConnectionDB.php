@@ -11,7 +11,7 @@ class ConnectionDB extends PDO {
     const QUERY_TYPE_MODIFY = 2;
 
     /**
-     * Create a new instance of ConnectionDB from a ini file.
+     * Create a new instance of ConnectionDB.
      * @param type $config_path the location of the ini file
      * @return ConnectionDB
      */
@@ -26,8 +26,8 @@ class ConnectionDB extends PDO {
      * @param type $config_path the location of the ini file
      * @return ConnectionDB
      */
-    public static function from_file($path, $section = "DB"): ConnectionDB {
-        $conf = parse_ini_file($path);
+    public static function from_file($path, $section = null): ConnectionDB {
+        $conf = $section === null ? parse_ini_file($path) : parse_ini_file($path, true)[$section];
         $host = $conf["HOST"];
         $db = $conf["DB"];
         $user = $conf["USER"];
