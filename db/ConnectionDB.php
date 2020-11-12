@@ -7,6 +7,8 @@ use PDOStatement;
 
 class ConnectionDB extends PDO {
 
+    use \hakuryo\db\ConnectionDBUtils;
+
     const QUERY_TYPE_SEARCH = 1;
     const QUERY_TYPE_MODIFY = 2;
 
@@ -17,7 +19,9 @@ class ConnectionDB extends PDO {
      */
     public function __construct(string $dsn, string $username = NULL, string $passwd = NULL, array $options = NULL) {
         parent::__construct($dsn, $username, $passwd, $options);
-        $this->query("SET NAMES 'utf8'");
+        if (!$this->is_oci()) {
+            $this->query("SET NAMES 'utf8'");
+        }
     }
 
     /**
@@ -27,15 +31,8 @@ class ConnectionDB extends PDO {
      * @return ConnectionDB
      */
     public static function from_file($path, $section = null): ConnectionDB {
-        $conf = $section === null ? parse_ini_file($path) : parse_ini_file($path, true)[$section];
-        $host = $conf["HOST"];
-        $db = $conf["DB"];
-        $user = $conf["USER"];
-        $pwd = $conf["PWD"];
-        $port = $conf["PORT"];
-        $url = "mysql:host=$host;dbname=$db;port=$port";
-        $con = new ConnectionDB($url, $user, $pwd);
-        $con->query("SET NAMES 'utf8'");
+        $conf = ConnectionDB::parse_ini($path, $section);
+        $con = new ConnectionDB($conf->dsn, $conf->user, $conf->pwd);
         return $con;
     }
 
@@ -53,7 +50,7 @@ class ConnectionDB extends PDO {
         $stmt = $this->prepare($request);
         $this->bind_values($stmt, $args, $assoc);
         $stmt->execute();
-        return $this->cast_data($stmt);
+        return $this->is_oci() ? $this->fecth_data($stmt) : $this->cast_data($stmt);
     }
 
     /**
@@ -86,6 +83,10 @@ class ConnectionDB extends PDO {
         $assoc ? $this->bind_assoc_values($stmt, $args) : $this->bind_values($stmt, $args);
         $stmt->execute();
         return $stmt->rowCount();
+    }
+
+    private function is_oci() {
+        return $this->getAttribute(PDO::ATTR_DRIVER_NAME) === 'oci';
     }
 
     private function bind_values(PDOStatement &$stmt, array $args, $assoc) {
@@ -132,6 +133,10 @@ class ConnectionDB extends PDO {
             $result[] = $obj;
         }
         return $result;
+    }
+
+    private function fecth_data(PDOStatement $stmt) {
+        return json_decode(json_encode($stmt->fetchAll(PDO::FETCH_ASSOC)));
     }
 
     private function get_casted_value($meta, $value) {
