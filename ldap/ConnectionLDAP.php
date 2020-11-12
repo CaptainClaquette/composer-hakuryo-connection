@@ -27,7 +27,7 @@ class ConnectionLDAP {
      * @throws Exception if LDAP server can't be conntacted or if the connection using user's credentials fail.
      */
     public function __construct(string $host, string $login, string $password, LdapSearchOptions $search_options = null) {
-        if ($this->connection = ldap_connect("ldap://$host")) {
+        if ($this->connection = ldap_connect($host)) {
             ldap_set_option($this->connection, LDAP_OPT_PROTOCOL_VERSION, 3);
             if (!ldap_bind($this->connection, $login, $password)) {
                 throw new Exception("Can't bind to ldap server $host cause : " . $this->getLastError(), -1);
@@ -116,7 +116,7 @@ class ConnectionLDAP {
         }
         return $result;
     }
-
+    
     /**
      * Create an LDAP entry
      * @param string $entry_dn The distinguished name of the entry

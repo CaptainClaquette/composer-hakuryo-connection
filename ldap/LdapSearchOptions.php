@@ -22,6 +22,7 @@ class LdapSearchOptions {
     private $result_limit;
     private $scope;
 
+    
     public function __construct(string $base_dn, int $result_limit = 0, string $scope = self::SEARCH_SCOPE_SUB) {
         $this->base_dn = $base_dn;
         $this->result_limit = $result_limit;
