@@ -96,7 +96,7 @@ class ConnectionDB extends PDO {
             }
         } else {
             for ($i = 0; $i < count($args); $i++) {
-                $stmt->bindValue($i + 1, $v);
+                $stmt->bindValue($i + 1, $args[$i]);
             }
         }
     }

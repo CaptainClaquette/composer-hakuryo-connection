@@ -22,9 +22,7 @@ trait ConnectionDBUtils {
         if ($raw_conf['DRIVER'] === 'mysql') {
             $config->dsn = "mysql:host=" . $raw_conf['HOST'] . ";dbname=" . $raw_conf['DB'] . ";port=" . intval($raw_conf['PORT']);
         } else {
-            $config->dsn = "(DESCRIPTION =
-                (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = " . $raw_conf['HOST'] . ")(PORT = " . intval($raw_conf['PORT']) . ")))
-                (CONNECT_DATA = (SERVICE_NAME = " . $raw_conf['DB'] . ")))";
+            $config->dsn = "oci:dbname=". $raw_conf['HOST'] .":". intval($raw_conf['PORT'])."/". $raw_conf['DB'];
         }
         return $config;
     }
