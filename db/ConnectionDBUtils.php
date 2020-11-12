@@ -20,10 +20,10 @@ trait ConnectionDBUtils {
         $config->user = $raw_conf['USER'];
         $config->pwd = $raw_conf['PWD'];
         if ($raw_conf['DRIVER'] === 'mysql') {
-            $config->dsn = "mysql:host=" . $raw_conf['HOST'] . ";dbname=" . $raw_conf['DB'] . ";port=" . $raw_conf['PORT'];
+            $config->dsn = "mysql:host=" . $raw_conf['HOST'] . ";dbname=" . $raw_conf['DB'] . ";port=" . intval($raw_conf['PORT']);
         } else {
             $config->dsn = "(DESCRIPTION =
-                (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = " . $raw_conf['HOST'] . ")(PORT = " . $raw_conf['PORT'] . ")))
+                (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = " . $raw_conf['HOST'] . ")(PORT = " . intval($raw_conf['PORT']) . ")))
                 (CONNECT_DATA = (SERVICE_NAME = " . $raw_conf['DB'] . ")))";
         }
         return $config;
