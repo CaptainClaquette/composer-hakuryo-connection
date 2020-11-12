@@ -48,28 +48,29 @@ class ConnectionDB extends PDO {
      * @return array An array of stdClass object.
      * @throws Exception If the query is not SELECT/SHOW/DESCRIB
      */
-    public function search(string $request,array $args = [], $assoc = true): array {
+    public function search(string $request, array $args = [], $assoc = true): array {
         $this->check_query_type($request, self::QUERY_TYPE_SEARCH);
         $stmt = $this->prepare($request);
         $this->bind_values($stmt, $args, $assoc);
         $stmt->execute();
         return $this->cast_data($stmt);
     }
-    
+
     /**
      * Perform a SELECT/SHOW/DESCRIB request and get the first result
      * @param string $request the request to execute. You can use preparedQuery placeholder in $request
      * @param array $args Argument of the prepared query
      * @param bool $assoc if assoc is true, $args must be an associative array with
      * string key else a 0 indexed array
-     * @return array An array of stdClass object.
+     * @return stdClass return You must check if result is relevant with property_exists function.
      * @throws Exception If the query is not SELECT/SHOW/DESCRIB
+     * @see property_exists
      */
-    public function get($request, $args = [], $assoc = true): array {
+    public function get($request, $args = [], $assoc = true): \stdClass {
         $result = $this->search($request, $args, $assoc);
-        return count($result) > 0 ? $result[0] : null;
+        return count($result) > 0 ? $result[0] : new \stdClass();
     }
-    
+
     /**
      * Perform a UPDATE/INSERT/DELETE and return the number of affected rows
      * @param string $request the request to execute. You can use preparedQuery placeholder in $request
