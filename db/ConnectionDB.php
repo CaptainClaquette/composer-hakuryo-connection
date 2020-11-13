@@ -29,6 +29,7 @@ class ConnectionDB extends PDO {
      * The ini file MUST have the following keys : HOST,DB,USER,PWD,PORT
      * @param type $config_path the location of the ini file
      * @return ConnectionDB
+     * @throws Exception If the ini file don't provide the mandatory keys "HOST", "DB", "USER", "PWD", "PORT", "DRIVER"
      */
     public static function from_file($path, $section = null): ConnectionDB {
         $conf = ConnectionDB::parse_ini($path, $section);
