@@ -1,5 +1,9 @@
 # Hakuryo Libs
 
+## Install
+
+> composer require hakuryo/connection:^2
+
 ## Dependencies
 
 ### Mandatory
