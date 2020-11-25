@@ -81,7 +81,7 @@ class ConnectionDB extends PDO {
     public function modify($request, $args = [], $assoc = true): int {
         $this->check_query_type($request, self::QUERY_TYPE_MODIFY);
         $stmt = $this->prepare($request);
-        $assoc ? $this->bind_assoc_values($stmt, $args) : $this->bind_values($stmt, $args);
+        $this->bind_values($stmt, $args, $assoc);
         $stmt->execute();
         return $stmt->rowCount();
     }
