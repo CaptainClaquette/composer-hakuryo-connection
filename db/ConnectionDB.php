@@ -4,6 +4,7 @@ namespace hakuryo\db;
 
 use PDO;
 use PDOStatement;
+use Exception;
 
 class ConnectionDB extends PDO {
 

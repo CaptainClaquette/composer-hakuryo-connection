@@ -67,7 +67,12 @@ $db = ConnectionDB::from_file('config.ini', 'oracle');
 $rq = "SELECT firstname FROM users WHERE id = :id";
 //Usage of named params
 // get function return the first line of the result
-print_r($db->get($rq, ["id"=>1234]));
+$result $db->get($rq, ["id"=>1234]);
+
+// Check if result is relevant
+if(property_exist($result,'id')){
+    print_r($result);
+}
 $db =null;
 
 //Connection with a config.ini without section
