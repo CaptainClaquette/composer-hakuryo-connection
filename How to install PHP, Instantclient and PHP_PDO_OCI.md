@@ -80,9 +80,13 @@ You should have the following result
 
 #### System configuration for OCI8
 
-In `/etc/ld.so.conf`, add the following line
+Use the following command to add oracle instantclient lib to your system.
 
-> include /opt/oci8/
+> echo /opt/oci8/ > /etc/ld.so.conf.d/oracle-instantclient.conf
+
+Then execute
+
+> ldconfig
 
 In `/etc/profile`, add the following line
 
