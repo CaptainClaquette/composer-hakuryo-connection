@@ -199,9 +199,9 @@ unzip it and go into `php-src-PHP-X.X.XX/ext/pdo_oci/` directory
 
 To compile PDO_OCI use the following command :
 
-> phpize
-> ./configure --with-pdo-oci=instantclient,/opt/oci8/
-> make && make install
+> phpize  
+> ./configure --with-pdo-oci=instantclient,/opt/oci8/  
+> make && make install  
 
 ### PHP_PDO_OCI configuration
 
