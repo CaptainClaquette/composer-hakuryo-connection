@@ -142,6 +142,9 @@ class ConnectionDB extends PDO {
     }
 
     private function get_casted_value($meta, $value) {
+        if (!key_exists('native_type', $meta)) {
+            return $value;
+        }
         switch ($meta['native_type']) {
             case 'LONG':
             case 'INT':
@@ -150,7 +153,7 @@ class ConnectionDB extends PDO {
                 return \DateTime::createFromFormat("Y-m-d H:i:s", $value)->getTimestamp();
             case 'TINY':
                 return $meta['len'] > 1 ? intval($value) : intval($value) == 1;
-            default :
+            default:
                 return $value;
         }
     }
