@@ -198,7 +198,9 @@ Download your PHP version source files on https://github.com/php/php-src.
 You must take the branch conrresponding to your php version
 > To find your php version use `php -v`
 
-unzip it and go into `php-src-PHP-X.X.XX/ext/pdo_oci/` directory
+Place the dowloaded file in `/tmp` and unzip it.
+
+go into `/tmp/php-src-PHP-X.X.XX/ext/pdo_oci/` directory
 
 ### PHP_PDO_OCI compilation
 
@@ -210,7 +212,9 @@ To compile PDO_OCI use the following command :
 
 ### PHP_PDO_OCI configuration
 
-In `/etc/php/X.X/apache2/php.ini` and/or `/etc/php/X.X/cli/php.ini`
+For console usage of pdo_oci edit `/etc/php/X.X/cli/php.ini`  
+For apache2 usage of pdo_oci edit `/etc/php/X.X/apache2/php.ini`  
+For console and apache2 usage of pdo_oci edit `/etc/php/X.X/apache2/php.ini` and `/etc/php/X.X/cli/php.ini`  
 
 Search for extensions declaration location and add the following line :
 
