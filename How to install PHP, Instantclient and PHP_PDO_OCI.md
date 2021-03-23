@@ -46,7 +46,7 @@ apt install php-pear php-dev
 
 1. Download Basic and SDK pack zip file of InstantClient : https://www.oracle.com/fr/database/technologies/instant-client/linux-x86-64-downloads.html
 2. Create the directory /opt/oci8/
-3. unzip the SKF and Basic pack into /opt/oci8/
+3. unzip the SDK and Basic pack into /opt/oci8/
 
 #### Checking OCI8 sources
 
@@ -64,8 +64,13 @@ If you don't find the links you could create them with the following commands :
 
 To compile OCI8 you must execute the following command :
 
+**For php 8+**
 ```BASH
 pecl install oci8
+```
+**For php 7.4**
+```BASH
+pecl install oci8-2.2.0
 ```
 
 When PECL ask for the instantClient path provide the path where you've unzip the instantClient Basic and SDK pack:
