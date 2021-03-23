@@ -196,7 +196,7 @@ If a lib is flag `not found` search how install it with `apt`.
 
 Download your PHP version source files on https://github.com/php/php-src.
 You must take the branch conrresponding to your php version
-> To find your php version use `php -m`
+> To find your php version use `php -v`
 
 unzip it and go into `php-src-PHP-X.X.XX/ext/pdo_oci/` directory
 
