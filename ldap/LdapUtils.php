@@ -2,6 +2,8 @@
 
 namespace hakuryo\ldap;
 
+use Exception;
+
 trait LdapUtils {
 
     public function clear_ldap_result($entrys): array {

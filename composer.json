@@ -15,7 +15,11 @@
     "autoload": {
         "classmap": [
             "db/",
-            "ldap/"
+            "ldap/",
+            "utils/"
         ]
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9"
     }
 }

@@ -17,6 +17,9 @@
 - Oracle Instantclient
 - PHP PDO_OCI
 
+## New Features
+- 2.1.0 : Add JSON file support.
+
 ## Breaking change
 
 ### version 2.x.x
@@ -25,6 +28,7 @@
 - Add php pdo_oci optional dependency
 
 ## ConnectionDB
+
 
 ### Exemple INI file
 
@@ -45,7 +49,21 @@ PWD = "mypass"
 PORT = 1234
 DRIVER = "oci" ;Accepted Values are oci,mysql
 
-```
+
+### Exemple JSON file
+
+```JSON
+{
+    "db": {
+        "DB": "mydb",
+        "HOST": "localhost",
+        "USER": "root",
+        "PWD": "mypass",
+        "PORT": 3306,
+        "DRIVER": "mysql"
+    }
+}
+``````
 
 ### ConnectionDB usage
 

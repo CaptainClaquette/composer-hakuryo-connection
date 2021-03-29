@@ -5,10 +5,9 @@ namespace hakuryo\db;
 use PDO;
 use PDOStatement;
 use Exception;
+use hakuryo\utils\ConfigParser;
 
 class ConnectionDB extends PDO {
-
-    use \hakuryo\db\ConnectionDBUtils;
 
     const QUERY_TYPE_SEARCH = 1;
     const QUERY_TYPE_MODIFY = 2;
@@ -33,7 +32,7 @@ class ConnectionDB extends PDO {
      * @throws Exception If the ini file don't provide the mandatory keys "HOST", "DB", "USER", "PWD", "PORT", "DRIVER"
      */
     public static function from_file($path, $section = null): ConnectionDB {
-        $conf = ConnectionDB::parse_ini($path, $section);
+        $conf = ConfigParser::parse_config_file($path, $section,"ConnectionDB");
         $con = new ConnectionDB($conf->dsn, $conf->user, $conf->pwd);
         return $con;
     }

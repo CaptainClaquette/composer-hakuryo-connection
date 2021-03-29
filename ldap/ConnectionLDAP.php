@@ -2,6 +2,9 @@
 
 namespace hakuryo\ldap;
 use Exception;
+use hakuryo\utils\ConfigParser;
+use JsonException;
+
 /**
  * Description of ConnectionLDAP
  *
@@ -29,10 +32,10 @@ class ConnectionLDAP {
     public function __construct(string $host, string $login, string $password, LdapSearchOptions $search_options = null) {
         if ($this->connection = ldap_connect($host)) {
             ldap_set_option($this->connection, LDAP_OPT_PROTOCOL_VERSION, 3);
-            if (!ldap_bind($this->connection, $login, $password)) {
+            if (!@ldap_bind($this->connection, $login, $password)) {
                 throw new Exception("Can't bind to ldap server $host cause : " . $this->getLastError(), -1);
             }
-            $this->search_options = $search_options === null ? new LdapSearchOptions(self::get_root_dn()) : $search_options;
+            $this->search_options = $search_options === null ? new LdapSearchOptions($this->get_root_dn()) : $search_options;
         } else {
             throw new Exception("Can't connect to ldap server $host cause : " . $this->getLastError(), -1);
         }
@@ -43,15 +46,13 @@ class ConnectionLDAP {
      * The ini file must have HOST,USER,PWD keys
      * @param string $path Path of the ini file
      * @param string $section Section to use on the ini file.
+     * @throws JsonException
+     * @throws Exception
      * @return \hakuryo\ldap\ConnectionLDAP
      */
     public static function fromFile(string $path, string $section = null): ConnectionLDAP {
-        $conf = $section === null ? parse_ini_file($path) : parse_ini_file($path, true)[$section];
-        $host = $conf["HOST"];
-        $user = $conf["USER"];
-        $password = $conf["PWD"];
-        $base_dn = $conf["DN"];
-        $ldap = new ConnectionLDAP($host, $user, $password, new LdapSearchOptions($base_dn));
+        $conf = ConfigParser::parse_config_file($path, $section,"ConnectionLDAP");
+        $ldap = new ConnectionLDAP($conf->host, $conf->user, $conf->pwd, new LdapSearchOptions($conf->base_dn));
         return $ldap;
     }
 
@@ -102,13 +103,13 @@ class ConnectionLDAP {
         $result = false;
         switch ($modify_type) {
             case self::MOD_ADD:
-                $result = ldap_mod_add($this->connection, $entry_dn, $target_entry_attr);
+                $result = @ldap_mod_add($this->connection, $entry_dn, $target_entry_attr);
                 break;
             case self::MOD_DEL:
-                $result = ldap_mod_del($this->connection, $entry_dn, $target_entry_attr);
+                $result = @ldap_mod_del($this->connection, $entry_dn, $target_entry_attr);
                 break;
             case self::MOD_REPLACE:
-                $result = ldap_mod_replace($this->connection, $entry_dn, $target_entry_attr);
+                $result = @ldap_mod_replace($this->connection, $entry_dn, $target_entry_attr);
                 break;
         }
         if (!$result) {
