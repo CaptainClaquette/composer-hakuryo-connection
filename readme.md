@@ -2,7 +2,7 @@
 
 ## Important
 
-**This package is no longer maintained.** I split it to gain more flexibility on witch package you want to install.
+**This package is no longer maintained.** I split it to gain more flexibility on wich package you want to install.
 
 - Code for database client moved here : https://github.com/CaptainClaquette/composer-database-client
 - Code for LDAP client moved here : https://github.com/CaptainClaquette/composer-ldap-client
