@@ -1,5 +1,14 @@
 # Hakuryo Libs
 
+## Important
+
+**This package is no longer maintained.** I split it to gain more flexibility on witch package you want to install.
+
+- Code for database client moved here : https://github.com/CaptainClaquette/composer-database-client
+- Code for LDAP client moved here : https://github.com/CaptainClaquette/composer-ldap-client
+
+**Important note** : I keeped the same namespaces for ConnectionDB and ConnectionLDAP to ease the transition between both pacakges
+
 ## Install
 
 > composer require hakuryo/connection:^2
